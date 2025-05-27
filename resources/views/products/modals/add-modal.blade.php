@@ -11,25 +11,27 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="name" name="name" required>
-                        <div class="invalid-feedback"></div>
+                        <input type="text" class="form-control" id="name" name="name">
+                        @error('name')  
+                            <small class="text-danger">{{ $message }}</small>  
+                        @enderror 
                     </div>
 
                     <div class="mb-3">
                         <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                         <div class="invalid-feedback"></div>
                     </div>
 
                     <div class="mb-3">
                         <label for="price" class="form-label">Price <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0">
                         <div class="invalid-feedback"></div>
                     </div>
 
                     <div class="mb-3">
                         <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
-                        <select class="form-select" id="category_id" name="category_id" required>
+                        <select class="form-select" id="category_id" name="category_id">
                             <option value="">Select Category</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -40,7 +42,7 @@
 
                     <div class="mb-3">
                         <label for="supplier_id" class="form-label">Supplier <span class="text-danger">*</span></label>
-                        <select class="form-select" id="supplier_id" name="supplier_id" required>
+                        <select class="form-select" id="supplier_id" name="supplier_id">
                             <option value="">Select Supplier</option>
                             @foreach($suppliers as $supplier)
                                 <option value="{{ $supplier->id }}">{{ $supplier->first_name }} {{ $supplier->last_name }}</option>

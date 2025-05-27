@@ -21,15 +21,16 @@
     </div>
 </div>
 
-@push('scripts')
+@push('script')
 <script>
 $(document).ready(function() {
     $('#deleteProductForm').on('submit', function(e) {
         e.preventDefault();
-        let productId = $('#deleteProductId').val();
+        let product = $('#deleteProductId').val();
+        console.log('Deleting product:', product);
 
         $.ajax({
-            url: `/products/delete/${productId}`,
+            url: `/products/${product}`,
             type: 'POST',
             data: $(this).serialize(),
             success: function(response) {

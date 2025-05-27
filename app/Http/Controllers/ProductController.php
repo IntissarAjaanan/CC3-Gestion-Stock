@@ -3,17 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ProductExport;
+use App\Http\Requests\ProductRequest;
 use App\Imports\ProductImport;
 use App\Models\Category;
+use App\Models\Order;
 use App\Models\Product;
+use App\Models\Stock;
+use App\Models\Store;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use Mpdf\Mpdf;
 
 class ProductController extends Controller
 {
-    public function store($request)
+    public function store(ProductRequest $request)
     {
         $validated = $request->validated();
 
@@ -29,7 +35,7 @@ class ProductController extends Controller
             return response()->json(['success' => true, 'product' => $product]);
         }
 
-        return redirect()->route('products.index')
+        return redirect()->route('products')
             ->with('success', 'Product created successfully.');
     }
 
@@ -44,7 +50,7 @@ class ProductController extends Controller
     /**
      * Update the specified product in storage.
      */
-    public function update($request, Product $product)
+    public function update(ProductRequest $request, Product $product)
     {
         $validated = $request->validated();
 
@@ -65,7 +71,7 @@ class ProductController extends Controller
             return response()->json(['success' => true, 'product' => $product]);
         }
 
-        return redirect()->route('products.index')
+        return redirect()->route('products')
             ->with('success', 'Product updated successfully.');
     }
 
@@ -78,7 +84,7 @@ class ProductController extends Controller
         if ($product->picture) {
             Storage::disk('public')->delete($product->picture);
         }
-
+        Stock::where('product_id', $product->id)->delete();
         $product->delete();
 
         return response()->json(['success' => true]);
@@ -96,39 +102,53 @@ class ProductController extends Controller
         $products = $category->products()
             ->with(['supplier', 'stock'])
             ->get();
-        
+        // dd($products);
         return view('products.byCategory', compact('categories', 'products'));
     }
 
     public function orderedProducts(){
-        $products = DB::table('product_orders')
+        $orders = Order::join('product_orders', 'product_orders.order_id', '=', 'orders.id')
             ->join('products', 'product_orders.product_id', '=', 'products.id')
-            ->join('orders', 'product_orders.order_id', '=', 'orders.id')
-            ->join('categories', 'products.category_id', '=', 'categories.id')
             ->join('customers', 'orders.customer_id', '=', 'customers.id')
-            ->join('suppliers','products.supplier_id','=','suppliers.id')
-            ->select(
-                'products.name as product_name' , 
-                DB::raw("CONCAT(customers.first_name, ' ', customers.last_name)  as customer_name"),
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->join('suppliers', 'products.supplier_id', '=', 'suppliers.id')
+            ->whereYear('orders.order_date', 2017)
+            ->whereMonth('orders.order_date', 2)
+            ->orderBy(DB::raw("CONCAT(customers.first_name, ' ', customers.last_name)"), "desc")
+            ->select([
+                'products.name as product_name',
+                DB::raw("CONCAT(customers.first_name, ' ', customers.last_name) as customer_name"),
                 'categories.name as category_name',
                 DB::raw("CONCAT(suppliers.first_name, ' ', suppliers.last_name) as supplier_name"),
-                'orders.order_date as order_date'
-            )
+                'orders.order_date as order_date',
+            ])
             ->get();
 
-        // dd($products);
-        return View('products.orderedProducts', compact('products'));
+        return view('products.orderedProducts', compact('orders'));
     }
 
-    public function ordersCount(){
-        $ordersCount = DB::table('product_orders')
-            ->join('products', 'product_orders.product_id', '=', 'products.id')
-            ->select('products.name as product_name', DB::raw('COUNT(product_orders.product_id) as countOrder'))
-            ->groupBy('product_orders.product_id', 'products.name')
+    public function ordersCount()
+    {
+        $products = Product::select('products.name')
+            ->leftJoin('product_orders', 'products.id', '=', 'product_orders.product_id')
+            ->groupBy('products.id', 'products.name')
+            ->selectRaw('products.name, COUNT(product_orders.order_id) as orders_count')
             ->get();
-        
-        dd($ordersCount);
-        return view('products.ordersCount', compact('ordersCount'));
+        return view('products.ordersCount', compact('products'));
+    }
+
+    /**
+     * Display products with more than 6 orders.
+     */
+    public function productsMoreThan6Orders()
+    {
+        $products = Product::select('products.id', 'products.name')
+            ->leftJoin('product_orders', 'products.id', '=', 'product_orders.product_id')
+            ->groupBy('products.id', 'products.name')
+            ->selectRaw('products.name, COUNT(product_orders.order_id) as orders_count')
+            ->havingRaw('COUNT(product_orders.order_id) > 6')
+            ->get();
+        return view('products.products_more_than_6_orders', compact('products'));
     }
 
     /**
@@ -150,5 +170,30 @@ class ProductController extends Controller
         return back()->with('success', 'Products imported successfully.');
     }
 
+    public function search(Request $request)
+{
+    $query = $request->input('query');
+
+    $products = Product::with(['category', 'supplier', 'stock'])
+        ->where('name', 'LIKE', "%{$query}%")
+        ->orWhere('description', 'LIKE', "%{$query}%")
+        ->get();
+
+    return response()->json($products);
+}
+public function print()
+    {
+        $user = Auth::user(); 
+        $products = Product::with(['category', 'supplier', 'stock'])->get();
+        $data = [
+            'products' => $products,
+            'user' => $user 
+        ];
+
+        $mpdf = new Mpdf();
+        $html = view('products.print_pdf', $data)->render();
+        $mpdf->WriteHTML($html);
+        return $mpdf->Output('products.pdf', 'I'); 
+    }
 
 }

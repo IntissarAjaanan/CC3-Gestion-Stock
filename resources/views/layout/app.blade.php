@@ -12,18 +12,24 @@
 </head>
 <body class="min-vh-100 d-flex flex-column">
     <div>
-        <nav class="navbar navbar-dark bg-dark d-flex justify-content-between p-3">
+        <nav class="navbar navbar-light bg-light d-flex justify-content-between p-3">
             <a class="navbar-brand fs-2 p-3" href="#">Gestion de stock</a>
-            <select name="selectLang" id="selectLang" class="btn btn-light">
-                <option @if(app()->getLocale() == 'ar') selected @endif value="ar">ar</option>
-                <option @if(app()->getLocale() == 'fr') selected @endif value="fr">fr</option>
-                <option @if(app()->getLocale() == 'en') selected @endif value="en">en</option>
-                <option @if(app()->getLocale() == 'es') selected @endif value="es">es</option>
-            </select>
-            <a href="{{route('email.form')}}" class="btn btn-success">Send Email</a>
+            <div class="d-flex align-items-center justify-end gap-1">
+                <select name="selectLang" id="selectLang" class="btn btn-light">
+                    <option @if(app()->getLocale() == 'ar') selected @endif value="ar">ar</option>
+                    <option @if(app()->getLocale() == 'fr') selected @endif value="fr">fr</option>
+                    <option @if(app()->getLocale() == 'en') selected @endif value="en">en</option>
+                    <option @if(app()->getLocale() == 'es') selected @endif value="es">es</option>
+                </select>
+    
+                <a href="{{ route('profile') }}" class="btn btn-primary me-2">Mon profil</a>
+                <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger">Se déconnecter</button>
+                </form>
+            </div>
         </nav>
     </div>
-    
     
     <div class="container flex-grow-1 py-4">
         @yield('content')
@@ -43,7 +49,7 @@
     @stack('script')
 
     <div>
-        <div class="bg-dark text-center text-light" style="height: 40px">&copy; copyright 2025</div>
+        <div class="bg-light text-center text-dark" style="height: 40px">&copy; copyright 2025</div>
     </div>
 </body>
 </html>

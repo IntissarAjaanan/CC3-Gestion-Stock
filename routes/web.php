@@ -7,57 +7,65 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 
 //Dashboard
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/customers', [DashboardController::class, 'customers'])->name('customers');
-Route::get('/suppliers', [DashboardController::class, 'suppliers'])->name('suppliers');
-Route::get('/products', [DashboardController::class, 'products'])->name('products');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
+Route::get('/customers', [DashboardController::class, 'customers'])->middleware('auth')->name('customers');
+Route::get('/suppliers', [DashboardController::class, 'suppliers'])->middleware('auth')->name('suppliers');
+Route::get('/products', [DashboardController::class, 'products'])->middleware('auth')->name('products');
 
 //Products
-Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-Route::get('/api/products/{product}', [ProductController::class, 'show'])->name('api.products.show');
-Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-Route::post('/products/delete/{productId}', [ProductController::class, 'delete'])->name('products.delete');
-Route::get('/by-category', [ProductController::class, 'byCategory'])->name('product.by.category');
-Route::get('/by-category/{category}', [ProductController::class, 'byCategoryX'])->name('product.by.category.x');
+Route::post('/products', [ProductController::class, 'store'])->middleware('auth')->name('products.store');
+Route::get('/api/products/{product}', [ProductController::class, 'show'])->middleware('auth')->name('api.products.show');
+Route::put('/products/{product}', [ProductController::class, 'update'])->middleware('auth')->name('products.update');
+Route::get('/by-category', [ProductController::class, 'byCategory'])->middleware('auth')->name('product.by.category');
+Route::get('/by-category/{category}', [ProductController::class, 'byCategoryX'])->middleware('auth')->name('product.by.category.x');
+Route::delete('/products/{product}', [ProductController::class, 'destroy'])->middleware('auth')->name('products.destroy');
+
+Route::get('/products-by-supplier', [DashboardController::class, 'productsBySupplier'])->name('products.by.supplier');
+Route::get('/api/products-by-supplier/{supplier}', [DashboardController::class, 'getProductsBySupplier'])->name('api.products.by.supplier');
+Route::get('/products-by-store', [DashboardController::class, 'productsByStore'])->name('products.by.store');
+Route::get('/api/products-by-store/{store}', [DashboardController::class, 'getProductsByStore'])->name('api.products.by.store');
+
+Route::get('/products/search', [ProductController::class, 'search'])->middleware('auth')->name('products.search');
 
 //Orders
-Route::get('/by-customer', [OrderController::class, 'index'])->name('product.by.order');
-Route::get('/by-customer/{customer}', [OrderController::class, 'getOrdersByCustomer'])->name('product.by.order.x');
+Route::get('/by-customer', [OrderController::class, 'index'])->middleware('auth')->name('product.by.order');
+Route::get('/by-customer/{customer}', [OrderController::class, 'getOrdersByCustomer'])->middleware('auth')->name('product.by.order.x');
 
 //Customers
-Route::get('/customer/addForm', [CustomerController::class, 'addForm'])->name('customers.addForm');
-Route::get('/customer/updateForm/{id}', [CustomerController::class, 'updateForm'])->name('customers.updateForm');
-Route::get('/customer/deleteForm/{id}', [CustomerController::class, 'deleteForm'])->name('customers.deleteForm');
+Route::get('/customer/addForm', [CustomerController::class, 'addForm'])->middleware('auth')->name('customers.addForm');
+Route::get('/customer/updateForm/{id}', [CustomerController::class, 'updateForm'])->middleware('auth')->name('customers.updateForm');
+Route::get('/customer/deleteForm/{id}', [CustomerController::class, 'deleteForm'])->middleware('auth')->name('customers.deleteForm');
 
-Route::get('/customer/search/{term}', [CustomerController::class, 'search'])->name('customers.search');
-Route::get('/customer/search1/{term}', [CustomerController::class, 'search1'])->name('customers.search');
+Route::get('/customer/search/{term}', [CustomerController::class, 'search'])->middleware('auth')->name('customers.search');
+Route::get('/customer/search1/{term}', [CustomerController::class, 'search1'])->middleware('auth')->name('customers.search');
 
-Route::post('/customer/add', [CustomerController::class, 'add'])->name('customers.add');
-Route::put('/customer/update/{id}', [CustomerController::class, 'update'])->name('customers.update');
-Route::delete('/customer/delete/{id}', [CustomerController::class, 'delete'])->name('customers.delete');
+Route::post('/customer/add', [CustomerController::class, 'add'])->middleware('auth')->name('customers.add');
+Route::put('/customer/update/{id}', [CustomerController::class, 'update'])->middleware('auth')->name('customers.update');
+Route::delete('/customer/delete/{id}', [CustomerController::class, 'delete'])->middleware('auth')->name('customers.delete');
 
 
 //Suppliers
-Route::get('/supplier/addForm', [SupplierController::class, 'addForm'])->name('suppliers.addForm');
-Route::post('/supplier/add', [SupplierController::class, 'add'])->name('suppliers.add');
-Route::get('/supplier/updateForm/{id}', [SupplierController::class, 'updateForm'])->name('suppliers.updateForm');
-Route::post('/supplier/update/{id}', [SupplierController::class, 'update'])->name('suppliers.update');
-Route::get('/supplier/deleteForm/{id}', [SupplierController::class, 'deleteForm'])->name('suppliers.deleteForm');
-Route::delete('/supplier/delete/{id}', [SupplierController::class, 'delete'])->name('suppliers.delete');
+Route::get('/supplier/addForm', [SupplierController::class, 'addForm'])->middleware('auth')->name('suppliers.addForm');
+Route::post('/supplier/add', [SupplierController::class, 'add'])->middleware('auth')->name('suppliers.add');
+Route::get('/supplier/updateForm/{id}', [SupplierController::class, 'updateForm'])->middleware('auth')->name('suppliers.updateForm');
+Route::post('/supplier/update/{id}', [SupplierController::class, 'update'])->middleware('auth')->name('suppliers.update');
+Route::get('/supplier/deleteForm/{id}', [SupplierController::class, 'deleteForm'])->middleware('auth')->name('suppliers.deleteForm');
+Route::delete('/supplier/delete/{id}', [SupplierController::class, 'delete'])->middleware('auth')->name('suppliers.delete');
 
 //Orders
-Route::get('/orders/by-customer',[OrderController::class, 'index1'])->name('orders');
-Route::get('/orders/by-customer/{customerId}', [OrderController::class, 'getOrdersByCustomer1'])->name('orders.by.customer');
-Route::get('/orders/by-customer/orderDetails/{orderId}', [OrderController::class, 'getOrderDetails1'])->name('orders.details');
+Route::get('/orders/by-customer',[OrderController::class, 'index1'])->middleware('auth')->name('orders');
+Route::get('/orders/by-customer/{customerId}', [OrderController::class, 'getOrdersByCustomer1'])->middleware('auth')->name('orders.by.customer');
+Route::get('/orders/by-customer/orderDetails/{orderId}', [OrderController::class, 'getOrderDetails1'])->middleware('auth')->name('orders.details');
 ////by view
-Route::get('/orders/by-customer-view',[OrderController::class, 'index2'])->name('orders.view');
-Route::get('/orders/by-customer-view/{customerId}', [OrderController::class, 'getOrdersByCustomer2'])->name('orders.by.customer.view');
-Route::get('/orders/by-customer-view/orderDetails/{orderId}', [OrderController::class, 'getOrderDetails2'])->name('orders.details.view');
+Route::get('/orders/by-customer-view',[OrderController::class, 'index2'])->middleware('auth')->name('orders.view');
+Route::get('/orders/by-customer-view/{customerId}', [OrderController::class, 'getOrdersByCustomer2'])->middleware('auth')->name('orders.by.customer.view');
+Route::get('/orders/by-customer-view/orderDetails/{orderId}', [OrderController::class, 'getOrderDetails2'])->middleware('auth')->name('orders.details.view');
 
 //translate
 Route::get('/changeLocale/{locale}', function (string $locale) {
@@ -68,14 +76,14 @@ Route::get('/changeLocale/{locale}', function (string $locale) {
 });
 
 //sql
-Route::get('ordered_products', [ProductController::class, 'orderedProducts'])->name('ordered.products');
-Route::get('orderLike/{customerName}', [CustomerController::class, 'orderLike'])->name('order.like');
-Route::get('orders.product', [ProductController::class, 'ordersCount'])->name('orders.product');
+Route::get('ordered_products', [ProductController::class, 'orderedProducts'])->middleware('auth')->name('ordered.products');
+Route::get('orderLike/{customerName}', [CustomerController::class, 'orderLike'])->middleware('auth')->name('order.like');
+Route::get('orders.product', [ProductController::class, 'ordersCount'])->middleware('auth')->name('orders.product');
 
 
 //send Email
-Route::get('email', [EmailController::class, 'index'])->name('email.form');
-Route::post('email/send', [EmailController::class, 'send'])->name('email.send');
+Route::get('email', [EmailController::class, 'index'])->middleware('auth')->name('email.form');
+Route::post('email/send', [EmailController::class, 'send'])->middleware('auth')->name('email.send');
 
 // Authentication Routes
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
@@ -103,3 +111,21 @@ Route::put('/password', [AuthController::class, 'updatePassword'])->name('passwo
 
 Route::get('products-export', [ProductController::class, 'export'])->name('products.export');
 Route::post('products-import', [ProductController::class, 'import'])->name('products.import');
+Route::get('/products/print', [ProductController::class, 'print'])->name('products.print');
+
+Route::post("/saveCookie", [DashboardController::class, 'saveCookie'])->name("saveCookie");
+Route::post("/saveSession", [DashboardController::class, 'saveSession'])->name("saveSession");
+
+Route::get('/ordered-products', [ProductController::class, 'orderedProducts'])->name('ordered.products');
+Route::get('/same-products-customers', [CustomerController::class, 'sameProductsCustomers'])->name('same.products.customers');
+Route::get('products/orders-count', [ProductController::class, 'ordersCount'])->name('products.orders_count');
+Route::get('/products-more-than-6-orders', [ProductController::class, 'productsMoreThan6Orders'])->name('products.more_than_6_orders');
+Route::get('/order-totals', [OrderController::class, 'orderTotals'])->name('orders.totals');
+Route::get('/orders-greater-than-60', [OrderController::class, 'ordersGreaterThanOrder60'])->name('orders.greater_than_60');
+
+Route::get('/customers/orders', [StoreController::class, 'customers_orders'])->name('customers.orders');
+Route::get('/suppliers/products', [StoreController::class, 'suppliers_products'])->name('suppliers.products');
+Route::get('products/same_stores', [StoreController::class, 'products_same_stores'])->name('products.same_stores');
+Route::get('/products/countbystore', [StoreController::class, 'countbystore'])->name('products.countbystore');
+Route::get('/store/value', [StoreController::class, 'storeValue'])->name('store.value');
+Route::get('/sotre/greater_than_lind', [StoreController::class, 'storeGreater_than_lind'])->name('sotre.greater_than_lind');

@@ -1,9 +1,11 @@
 @extends('layout.app')
 @section('content')
-<div class="d-flex justify-between mb-3">
+<div class="d-flex justify-content-between mb-3">
     <h3>List of Customers</h3>
-    <a href="{{ route('customers.addForm') }}" class="btn btn-success">Add Customer</a>
-    <a href="/dashboard" class="btn btn-light">Back</a>
+    <div>
+        <a href="{{ route('customers.addForm') }}" class="btn btn-success">Add Customer</a>
+        <a href="/dashboard" class="btn btn-light">Back</a>
+    </div>
 </div>
 @if (session('success'))
     <div class="alert alert-success">
@@ -46,38 +48,46 @@
 @push('script')
 <script>
   $(document).ready(function(){
-    $('#search').on('keyup', function(e) {
-      // if(e.which == 13) {
-        var val = $(this).val();
-        var searchUrl = "/customer/search/" + encodeURIComponent(val);
-        $.ajax({
-            url: searchUrl,
-            type: "GET",  
-            success: function(data) {
-                $('#tbody').empty(); 
-                if (data.length === 0) {
-                    $('#tbody').append('<tr><td colspan="5" class="text-center">No customers found</td></tr>');
-                } else {
-                    $.each(data, function(index, customer) {
-                        $('#tbody').append('<tr>' +
-                            '<td>' + customer.first_name + ' ' + customer.last_name + '</td>' +
-                            '<td>' + customer.address + '</td>' +
-                            '<td>' + customer.email + '</td>' +
-                            '<td>' + customer.phone + '</td>' +
-                            '<td>' +
-                                '<a href="{{url("customers/updateForm")}}/' + customer.id + '" class="btn btn-primary">Edit</a> ' +
-                                '<a href="{{url("customers/deleteForm")}}/' + customer.id + '" class="btn btn-danger">Delete</a>' +
-                            '</td>' +
-                        '</tr>');
-                    });
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error(error);
-            }
-        });
-      // }
-    });
-  })
+  const updateBaseUrl = "{{ url('customer/updateForm') }}/";
+  const deleteBaseUrl = "{{ url('customer/deleteForm') }}/";
+
+  const originalTableBody = $('#tbody').html();
+
+  $('#search').on('keyup', function(e) {
+    var val = $(this).val().trim();
+
+    if(val.length > 0){
+      var searchUrl = "/customer/search/" + encodeURIComponent(val);
+      $.ajax({
+        url: searchUrl,
+        type: "GET",  
+        success: function(data) {
+          $('#tbody').empty(); 
+          if (data.length === 0) {
+            $('#tbody').append('<tr><td colspan="5" class="text-center">No customers found</td></tr>');
+          } else {
+            $.each(data, function(index, customer) {
+              $('#tbody').append('<tr>' +
+                '<td>' + customer.first_name + ' ' + customer.last_name + '</td>' +
+                '<td>' + customer.address + '</td>' +
+                '<td>' + customer.email + '</td>' +
+                '<td>' + customer.phone + '</td>' +
+                '<td>' +
+                  '<a href="' + updateBaseUrl + customer.id + '" class="btn btn-primary">Edit</a> ' +
+                  '<a href="' + deleteBaseUrl + customer.id + '" class="btn btn-danger">Delete</a>' +
+                '</td>' +
+                '</tr>');
+            });
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error(error);
+        }
+      });
+    } else {
+      $('#tbody').html(originalTableBody);
+    }
+  });
+});
 </script>
 @endpush

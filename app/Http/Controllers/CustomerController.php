@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
+use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 
 class CustomerController extends Controller
@@ -89,4 +90,34 @@ class CustomerController extends Controller
         return view ('customers.orderLike',compact('customers'));
     }
 
+    public function sameProductsCustomers()
+    {
+
+        $customer =Customer::whereRaw("CONCAT(first_name, ' ', last_name) = ?", ['Annabel Stehr'])->first();
+        if (!$customer) {
+            return view('customers.same_products_customers', ['customers' => collect()]);
+        }
+
+        $productIds = Order::join('product_orders', 'orders.id', '=', 'product_orders.order_id')
+            ->where('orders.customer_id', $customer->id)
+          ->pluck('product_orders.product_id');
+
+
+
+        $customers = DB::table('orders')
+            ->join('product_orders', 'orders.id', '=', 'product_orders.order_id')
+            ->join('customers', 'orders.customer_id', '=', 'customers.id')
+            ->join('products', 'product_orders.product_id', '=', 'products.id')
+            ->whereIn('product_orders.product_id', $productIds)
+            ->where('orders.customer_id', '!=', $customer->id)
+            ->select([
+                DB::raw("CONCAT(customers.first_name, ' ', customers.last_name) as customer_name"),
+                'customers.email',
+                'products.name as product_name',
+                'orders.order_date as order_date',
+            ])
+            ->orderBy('customer_name')
+            ->get();
+        return view('customers.same_products_customers', compact('customers'));
+    }
 }

@@ -45,7 +45,7 @@
                         <select class="form-select" id="editSupplierId" name="supplier_id" required>
                             <option value="">Select Supplier</option>
                             @foreach($suppliers as $supplier)
-                                <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                                <option value="{{ $supplier->id }}">{{ $supplier->first_name }} {{ $supplier->last_name }}</option>
                             @endforeach
                         </select>
                         <div class="invalid-feedback"></div>

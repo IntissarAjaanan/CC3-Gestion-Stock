@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
 {
-    // Show login form
     public function showLoginForm()
     {
         if (Auth::check()) {
@@ -24,7 +23,6 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    // Process login
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -44,13 +42,11 @@ class AuthController extends Controller
         ])->withInput($request->except('password'));
     }
 
-    // Show registration form
     public function showRegistrationForm()
     {
         return view('auth.register');
     }
 
-    // Process registration
     public function register(Request $request)
     {
         $request->validate([
@@ -63,23 +59,20 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'is_active' => false, // User is inactive until email verification
+            'is_active' => false,
             'email_verification_token' => Str::random(60),
         ]);
 
-        // Send verification email
         Mail::to($user->email)->send(new EmailVerification($user));
 
         return redirect()->route('verification.notice')->with('status', 'Un lien de vérification a été envoyé à votre adresse e-mail.');
     }
 
-    // Show verification notice
     public function verificationNotice()
     {
         return view('auth.verify');
     }
 
-    // Verify email
     public function verifyEmail($token)
     {
         $user = User::where('email_verification_token', $token)->first();
@@ -96,13 +89,11 @@ class AuthController extends Controller
         return redirect()->route('login')->with('status', 'Votre adresse e-mail a été vérifiée. Vous pouvez maintenant vous connecter.');
     }
 
-    // Show forgot password form
     public function showForgotPasswordForm()
     {
         return view('auth.forgot-password');
     }
 
-    // Process forgot password
     public function forgotPassword(Request $request)
     {
         $request->validate([
@@ -131,13 +122,11 @@ class AuthController extends Controller
         return back()->with('status', 'Un lien de réinitialisation du mot de passe a été envoyé à votre adresse e-mail.');
     }
 
-    // Show reset password form
     public function showResetPasswordForm($token, $email)
     {
         return view('auth.reset-password', ['token' => $token, 'email' => $email]);
     }
 
-    // Process reset password
     public function resetPassword(Request $request)
     {
         $request->validate([
@@ -164,20 +153,24 @@ class AuthController extends Controller
         return redirect()->route('login')->with('status', 'Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.');
     }
 
-    // Show profile
     public function showProfile()
     {
         return view('auth.profile', ['user' => Auth::user()]);
     }
 
-    // Update profile
     public function updateProfile(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        if (!$user) {
+            return back()->withErrors(['user' => 'Utilisateur non trouvé.']);
+        }
+
         $user->name = $request->name;
         $user->save();
 
@@ -192,7 +185,7 @@ class AuthController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        $user = Auth::user();
+        $user = User::find(Auth::id());
 
         if (!Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.']);

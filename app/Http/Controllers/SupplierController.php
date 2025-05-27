@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
+use App\Models\Product;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 
@@ -37,10 +38,11 @@ class SupplierController extends Controller
         return view('suppliers.delete', compact('supplier'));
     }
     public function delete($id){
-        $supplier = Supplier::find($id);
-        $supplier->delete();
+        Product::where('supplier_id',$id)->delete();
+        Supplier::find($id)->delete();
+
         return redirect()
             ->route('suppliers')
-            ->with('success', 'Supplier deleted successfuly');
+            ->with('success', 'Supplier deleted successfully');
     }
 }

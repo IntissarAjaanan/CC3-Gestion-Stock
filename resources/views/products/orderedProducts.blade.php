@@ -1,31 +1,33 @@
 @extends('layout.app')
+
 @section('content')
-<div class="d-flex justify-between mb-3">
-    <h3>Ordred Products</h3>
-    <a href="{{route('dashboard')}}" class="btn btn-light">To Dashboard</a>
-</div>
-<div class="card">
-    <table class="table">
-        <thead class="thead-dark">
-          <tr>
-            <th scope="col">Product name</th>
-            <th scope="col">Client name</th>
-            <th scope="col">Category</th>
-            <th scope="col">Fournisseur</th>
-            <th scope="col">Date</th>
-          </tr>
+<div class="container">
+    <h2>Liste des produits commandés (02 / 2017)</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nom du produit</th>
+                <th>Nom du client</th>
+                <th>Catégorie</th>
+                <th>Fournisseur</th>
+                <th>Date de commande</th>
+            </tr>
         </thead>
         <tbody>
-          @foreach ($products as $product)
-              <tr>
-                <td>{{ $product->product_name}}</td>
-                <td>{{ $product->customer_name}}</td>
-                <td>{{ $product->category_name }}</td>
-                <td>{{ $product->supplier_name }}</td>
-                <td>{{ $product->order_date }}</td>
-              </tr>
-          @endforeach
+            @forelse($orders as $order)
+                <tr>
+                    <td>{{ $order->product_name }}</td>
+                    <td>{{ $order->customer_name }}</td>
+                    <td>{{ $order->category_name }}</td>
+                    <td>{{ $order->supplier_name }}</td>
+                    <td>{{ \Carbon\Carbon::parse($order->order_date)->format('d/m/Y') }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5">Aucune commande trouvée pour juillet 2024.</td>
+                </tr>
+            @endforelse
         </tbody>
-      </table>
+    </table>
 </div>
 @endsection

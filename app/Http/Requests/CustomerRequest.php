@@ -21,11 +21,12 @@ class CustomerRequest extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array{
+        $customerId = $this->route('id');
         return [
             'first_name' => 'required|min:3|max:255',
             'last_name' => 'required|min:3|max:255',
             'address' => 'required|min:10|max:255',
-            'email' => ['required','max:255','regex:/^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/',Rule::unique('customers')->ignore($this->route('id'))],
+            'email' => ['required','max:255','regex:/^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/',Rule::unique('customers')->ignore($customerId)],
             'phone' => ['required'], //'min:10','max:10','regex:/^(06|07)[0-9]{8}$/'
         ];
     }
